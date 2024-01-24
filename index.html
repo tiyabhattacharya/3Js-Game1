@@ -67,34 +67,42 @@
             this.bottom = this.position.y - this.height/2
             this.top = this.position.y + this.height/2
 
+            this.front = this.position.z + this.depth/2
+            this.back = this.position.z - this.depth/2
+
             this.velocity=velocity
             this.gravity = -0.002
             
         }
 
-        update(ground){
+        updateSides(){
             this.right = this.position.x + this.width/2
             this.left = this.position.x - this.width/2
 
             this.bottom = this.position.y - this.height/2
             this.top = this.position.y + this.height/2
 
+            this.front = this.position.z + this.depth/2
+            this.back = this.position.z - this.depth/2
+        }
+
+        update(ground){
+            
+            this.updateSides()
             this.position.x += this.velocity.x
             this.position.z += this.velocity.z
 
-            //detect collision on x axis
-            if(this.right >= ground.left){
-              console.log('collision')
-            }
-
-            this.applyGravity()
+            this.applyGravity(ground)
         }
 
-        applyGravity(){
+        applyGravity(ground){
             this.velocity.y += this.gravity //gravity adding
             
             //this is where we hit the ground
-            if(this.bottom + this.velocity.y <= ground.top){
+            if(boxCollision({
+              box1:this,
+              box2:ground
+            })){
                 this.velocity.y *= 0.8 //show effect of friction
                 this.velocity.y= -this.velocity.y
             }
@@ -102,6 +110,20 @@
                 this.position.y+= this.velocity.y
             }
         }
+    }
+
+    function boxCollision({box1,box2}){
+      //detect collision on x axis
+      const xCollision =box1.right >= box2.left && box1.left <= box2.right
+            
+    //detect collision on Y axis
+    const yCollision= box1.bottom + box1.velocity.y <= box2.top && box1.top >=box2.bottom
+            
+    //detect collision on Z axis
+    const zCollision = box1.front >=box2.back && box1.back <= box2.front
+
+    return xCollision && zCollision && yCollision     
+    
     }
   
     const cube = new Box({
@@ -202,11 +224,11 @@
       cube.velocity.x=0
       cube.velocity.z=0
 
-     if(keys.a.pressed) cube.velocity.x= -0.01
-     else if(keys.d.pressed) cube.velocity.x= 0.01
+     if(keys.a.pressed) cube.velocity.x= -0.05
+     else if(keys.d.pressed) cube.velocity.x= 0.05
 
-     if(keys.w.pressed) cube.velocity.z= -0.01
-     else if(keys.s.pressed) cube.velocity.z= 0.01
+     if(keys.w.pressed) cube.velocity.z= -0.05
+     else if(keys.s.pressed) cube.velocity.z= 0.05
      
 
       cube.update(ground)
